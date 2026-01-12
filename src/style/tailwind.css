@@ -1,0 +1,239 @@
+@import "tailwindcss";
+
+@theme {
+	--font-inter: "Inter", system-ui, -apple-system, sans-serif;
+
+	/* iOS 26 Liquid Glass Color Palette - Adjusted for Light/Pink Theme */
+	--color-glass-white: rgba(255, 255, 255, 0.4);
+	--color-glass-white-strong: rgba(255, 255, 255, 0.6);
+	--color-glass-border: rgba(255, 45, 146, 0.1);
+	--color-glass-border-strong: rgba(255, 45, 146, 0.2);
+
+	/* Background Gradients - Light/Pink/White */
+	--color-bg-primary: #ffffff;
+	--color-bg-secondary: #fff5f8;
+	--color-bg-tertiary: #ffeef2;
+
+	/* Accent Colors - Pink & White Focused */
+	--color-accent-pink: #ff2d92;
+	--color-accent-magenta: #ff2d92;
+	--color-accent-rose: #ec4899;
+	--color-accent-peach: #fdbab4;
+	--color-accent-white: #ffffff;
+	--color-accent-grey: #f0f0f0;
+
+	/* Legacy mapping for compatibility if needed */
+	--color-accent-cyan: #ff2d92;
+	--color-accent-violet: #ec4899;
+	--color-accent-blue: #ff7eb3;
+
+	/* Text Colors - Dark for Light Theme */
+	--color-text-primary: #1a1a1a;
+	--color-text-secondary: #4a4a4a;
+	--color-text-tertiary: #717171;
+	--color-text-muted: #a0a0a0;
+
+	/* Shadows - Pink/Soft Focused */
+	--shadow-glass: 0 8px 32px rgba(255, 45, 146, 0.08);
+	--shadow-glass-lg: 0 16px 48px rgba(255, 45, 146, 0.12);
+	--shadow-glow-pink: 0 0 20px rgba(255, 45, 146, 0.2);
+	--shadow-glow-magenta: 0 0 20px rgba(255, 45, 146, 0.3);
+
+	/* Animations */
+	--animate-float: float 6s ease-in-out infinite;
+	--animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+	--animate-gradient: gradient-shift 8s ease infinite;
+}
+
+@keyframes float {
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-20px);
+	}
+}
+
+@keyframes pulse-glow {
+	0%,
+	100% {
+		opacity: 0.5;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
+@keyframes gradient-shift {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+/* Base Styles */
+body {
+	font-family: var(--font-inter);
+	background: linear-gradient(
+		135deg,
+		var(--color-bg-primary) 0%,
+		var(--color-bg-secondary) 50%,
+		var(--color-bg-tertiary) 100%
+	);
+	background-attachment: fixed;
+	min-height: 100vh;
+	color: var(--color-text-primary);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+	/* Glass Effects - Re-imagined for Pink/White */
+	.glass {
+		background: rgba(255, 255, 255, 0.5);
+		backdrop-filter: blur(24px) saturate(180%);
+		-webkit-backdrop-filter: blur(24px) saturate(180%);
+		border: 1px solid rgba(255, 45, 146, 0.1);
+		box-shadow:
+			0 4px 16px rgba(255, 45, 146, 0.05),
+			inset 0 1px 0 rgba(255, 255, 255, 0.8);
+	}
+
+	.glass-strong {
+		background: rgba(255, 255, 255, 0.7);
+		backdrop-filter: blur(40px) saturate(200%);
+		-webkit-backdrop-filter: blur(40px) saturate(200%);
+		border: 1px solid rgba(255, 45, 146, 0.15);
+		box-shadow:
+			0 8px 32px rgba(255, 45, 146, 0.1),
+			inset 0 1px 0 rgba(255, 255, 255, 0.9);
+	}
+
+	.glass-subtle {
+		background: rgba(255, 255, 255, 0.3);
+		backdrop-filter: blur(12px) saturate(150%);
+		-webkit-backdrop-filter: blur(12px) saturate(150%);
+		border: 1px solid rgba(255, 45, 146, 0.05);
+	}
+
+	/* Gradient Backgrounds */
+	.bg-gradient-radial {
+		background: radial-gradient(
+			ellipse at center,
+			var(--color-bg-secondary) 0%,
+			var(--color-bg-primary) 100%
+		);
+	}
+
+	.bg-gradient-mesh {
+		background:
+			radial-gradient(at 20% 30%, rgba(255, 45, 146, 0.08) 0%, transparent 50%),
+			radial-gradient(at 80% 70%, rgba(255, 45, 146, 0.05) 0%, transparent 50%),
+			radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+			linear-gradient(
+				135deg,
+				var(--color-bg-primary) 0%,
+				var(--color-bg-secondary) 100%
+			);
+	}
+
+	/* Accent Gradients */
+	.gradient-accent {
+		background: linear-gradient(135deg, #ff2d92 0%, #ff7eb3 100%);
+	}
+
+	.gradient-accent-warm {
+		background: linear-gradient(135deg, #ff2d92 0%, #fdbab4 100%);
+	}
+
+	.gradient-accent-cool {
+		background: linear-gradient(135deg, #ff7eb3 0%, #ff2d92 100%);
+	}
+
+	/* Glow Effects */
+	.glow-pink {
+		box-shadow:
+			0 0 20px rgba(255, 45, 146, 0.2),
+			0 0 40px rgba(255, 45, 146, 0.1);
+	}
+
+	.glow-magenta {
+		box-shadow:
+			0 0 20px rgba(255, 45, 146, 0.3),
+			0 0 40px rgba(255, 45, 146, 0.15);
+	}
+
+	/* Text Glow */
+	.text-glow {
+		text-shadow: 0 0 8px rgba(255, 45, 146, 0.2);
+	}
+
+	.text-glow-pink {
+		text-shadow: 0 0 15px rgba(255, 45, 146, 0.4);
+	}
+
+	/* Animated Orbs for Background - Pink Themed */
+	.orb {
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(60px);
+		opacity: 0.3;
+		animation: float 6s ease-in-out infinite;
+	}
+
+	.orb-cyan {
+		/* Renamed or re-themed internally */
+		background: radial-gradient(
+			circle,
+			rgba(255, 45, 146, 0.2) 0%,
+			transparent 70%
+		);
+	}
+
+	.orb-magenta {
+		background: radial-gradient(
+			circle,
+			rgba(255, 75, 160, 0.2) 0%,
+			transparent 70%
+		);
+	}
+
+	.orb-violet {
+		background: radial-gradient(
+			circle,
+			rgba(255, 126, 179, 0.15) 0%,
+			transparent 70%
+		);
+	}
+
+	/* Interactive States */
+	.hover-glow:hover {
+		box-shadow: 0 0 20px rgba(255, 45, 146, 0.1);
+	}
+
+	.hover-scale:hover {
+		transform: scale(1.01);
+	}
+
+	.hover-lift:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px rgba(255, 45, 146, 0.08);
+	}
+
+	/* Pill Shape */
+	.pill {
+		border-radius: 9999px;
+	}
+
+	/* Focus Ring */
+	.focus-glow:focus {
+		outline: none;
+		box-shadow: 0 0 0 3px rgba(255, 45, 146, 0.2);
+	}
+}

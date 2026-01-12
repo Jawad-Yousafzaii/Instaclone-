@@ -1,0 +1,978 @@
+
+Project Name: MediaShare
+Version: 1.0.0
+Description: Cloud-native media sharing platform for photos and videos
+Tech Stack: React 19, Vite, Tailwind CSS, Supabase, Azure Blob Storage
+
+MediaShare is a modern web application that enables creators to upload and share
+photos/videos while allowing consumers to discover, rate, and comment on media
+content. The platform implements role-based access control, cloud storage
+integration, and a responsive user interface.
+
+
+TABLE OF CONTENTS
+
+1. ARCHITECTURE OVERVIEW
+2. FRONTEND STRUCTURE
+3. BACKEND & DATABASE
+4. AUTHENTICATION SYSTEM
+5. MEDIA UPLOAD & STORAGE
+6. COMMENT & RATING SYSTEMS
+7. STATE MANAGEMENT
+8. ROUTING & NAVIGATION
+9. API SERVICES
+10. DEPLOYMENT & CONFIGURATION
+
+
+1. ARCHITECTURE OVERVIEW
+================================================================================
+
+The platform follows a modern client-server architecture:
+
+┌─────────────────────────────────────────────────────────────┐
+│                    CLIENT (React SPA)                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   Creator    │  │   Consumer   │  │     Auth     │      │
+│  │  Dashboard   │  │     Feed     │  │    Pages     │      │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
+│         │                  │                  │              │
+│         └──────────────────┴──────────────────┘              │
+│                           │                                  │
+│                  ┌────────▼────────┐                         │
+│                  │  Services Layer │                         │
+│                  │  (API Clients)  │                         │
+│                  └────────┬────────┘                         │
+└───────────────────────────┼──────────────────────────────────┘
+                            │
+            ┌───────────────┴───────────────┐
+            │                               │
+    ┌───────▼────────┐            ┌────────▼─────────┐
+    │    Supabase    │            │  Azure Blob      │
+    │   PostgreSQL   │            │    Storage       │
+    │  + Auth + RLS  │            │ (Media Files)    │
+    └────────────────┘            └──────────────────┘
+
+
+KEY TECHNOLOGIES:
+-----------------
+• Frontend Framework: React 19 with Vite build tool
+• Styling: Tailwind CSS 4.0 with utility-first approach
+• Routing: React Router DOM v7 for client-side navigation
+• State Management: Zustand for lightweight global state
+• Backend: Supabase (PostgreSQL + Authentication + Row-Level Security)
+• File Storage: Azure Blob Storage with SAS token authentication
+• Code Quality: ESLint, Prettier, Husky, CommitLint
+
+
+2. FRONTEND STRUCTURE
+================================================================================
+
+PROJECT DIRECTORY STRUCTURE:
+----------------------------
+src/
+├── assets/              # Static files (images, fonts, SVGs)
+├── components/          # Reusable React components
+│   ├── common/          # Shared components (SearchBar, FilterPanel, etc.)
+│   ├── media/           # Media-specific components (MediaCard, CommentSection)
+│   └── ui/              # UI primitives (Button, Input, Card, Avatar, etc.)
+├── context/             # React Context providers
+├── hooks/               # Custom React hooks
+├── layouts/             # Layout wrappers
+│   ├── AuthLayout.jsx       # Login/signup page layout
+│   ├── CreatorLayout.jsx    # Creator dashboard layout w/ sidebar
+│   ├── ConsumerLayout.jsx   # Consumer feed layout w/ navbar
+│   └── primary-layout.jsx   # Base layout wrapper
+├── lib/
+│   ├── config/          # Configuration (config.js)
+│   ├── constants/       # App constants (routes, constants)
+│   └── utils/           # Helper functions (formatDate, generateId)
+├── pages/              
+│   ├── auth/            # Login.jsx, ConsumerSignup.jsx, CreatorSignup.jsx
+│   ├── creator/         # Dashboard, MediaUpload, MediaManage, MediaEdit
+│   ├── consumer/        # Feed, MediaDetail
+│   ├── home/            # Landing page
+│   └── not-found.jsx    # 404 error page
+├── services/            # API service layers
+│   ├── authService.js       # Authentication operations
+│   ├── commentService.js    # Comment CRUD operations
+│   ├── mediaService.js      # Media CRUD + queries
+│   └── storageService.js    # Azure Blob upload/delete
+├── store/               # Zustand state stores
+│   ├── useAuthStore.js      # Auth state (user, token, login/logout)
+│   ├── useMediaStore.js     # Media filters and search state
+│   └── ui-states.js         # UI state (modals, loading)
+└── style/               # Global CSS and Tailwind config
+
+
+CORE COMPONENTS:
+----------------
+
+MediaCard.jsx
+  Displays media thumbnail/preview with metadata (title, creator, rating).
+  Props:
+    - media: {id, title, caption, type, url, thumbnail, location, creatorName, 
+             creatorAvatar, averageRating, createdAt}
+    - showCreator: boolean (display creator info)
+  
+  Features:
+    - Image preview with hover zoom effect
+    - Video preview with play icon overlay
+    - Rating badge display
+    - Creator avatar and name (if showCreator=true)
+    - Navigate to detail page on click
+
+CommentSection.jsx
+  Interactive comment section with add/display functionality.
+  Props:
+    - mediaId: UUID of the media item
+    - comments: Array of comment objects
+    
+  Features:
+    - Add new comments (authenticated users only)  
+    - Display all comments with user avatars
+    - Relative timestamps ("2 hours ago")
+    - Empty state when no commentsRatingComponent.jsx
+  Star rating widget for user ratings.
+  Props:
+    - value: Current rating (0-5)
+    - onChange: Callback when rating changes
+    - readonly: Boolean flag for display-only
+    - size: 'sm' | 'md' | 'lg'
+    - showCount: Display rating count
+    - count: Total number of ratings
+
+
+LAYOUTS & ROUTING:
+------------------
+
+AuthLayout.jsx
+  Centered layout for authentication pages with gradient background.
+  Used for: Login, Signup pages
+  Features: Split-screen design with branding on left, form on right
+
+CreatorLayout.jsx
+  Dashboard layout with sidebar navigation for creators.
+  Used for: Creator Dashboard, Upload, Manage, Edit pages
+  Navigation Items:
+    - Dashboard (home)
+    - Upload Media
+    - Manage Media
+    - Profile Settings
+    - Logout
+
+ConsumerLayout.jsx
+  Top navigation bar layout for consumers.
+  Used for: Feed, Media Detail pages
+  Navigation Items:
+    - Discover Feed
+    - Profile
+    - Logout
+
+
+3. BACKEND & DATABASE
+================================================================================
+
+DATABASE PROVIDER: Supabase (PostgreSQL)
+
+SCHEMA OVERVIEW:
+----------------
+
+┌──────────────────┐
+│   auth.users     │ (Supabase managed)
+│──────────────────│
+│ id (UUID) PK     │
+│ email            │
+│ encrypted_pw     │
+│ created_at       │
+└────────┬─────────┘
+         │
+         │ (1:1 relationship)
+         │
+┌────────▼─────────┐       ┌──────────────────┐
+│  public.users    │       │  public.media    │
+│──────────────────│       │──────────────────│
+│ id (UUID) PK ────┼───┐   │ id (UUID) PK     │
+│ email  UNIQUE    │   │   │ creator_id FK ───┼───┐
+│ name             │   │   │ title            │   │
+│ avatar_url       │   │   │ caption          │   │
+│ role (enum)      │   │   │ type (enum)      │   │
+│ bio              │   │   │ url              │   │
+│ created_at       │   │   │ thumbnail_url    │   │
+│ updated_at       │   │   │ location         │   │
+└──────────────────┘   │   │ people[]         │   │
+                       │   │ views_count      │   │
+                       │   │ average_rating   │   │
+                       │   │ ratings_count    │   │
+                       │   │ comments_count   │   │
+                       │   │ created_at       │   │
+                       │   │ updated_at       │   │
+                       │   └────────┬─────────┘   │
+                       │            │             │
+                       │            │ (1:N)       │ (1:N)
+                       │            │             │
+               ┌───────▼────────┐  │   ┌─────────▼──────────┐
+               │ public.comments │  │   │  public.ratings    │
+               │─────────────────│  │   │────────────────────│
+               │ id (UUID) PK    │  │   │ id (UUID) PK       │
+               │ media_id FK ────┼──┘   │ media_id FK ───────┼──┘
+               │ user_id FK ─────┼──────┼─ user_id FK        │
+               │ content         │      │ rating (1-5)       │
+               │ created_at      │      │ created_at         │
+               │ updated_at      │      │ updated_at         │
+               └─────────────────┘      └────────────────────┘
+
+
+TABLE DETAILS:
+--------------
+
+public.users
+  Extends Supabase auth.users with profile information.
+  
+  Columns:
+    - id: UUID (PK, references auth.users.id ON DELETE CASCADE)
+    - email: TEXT UNIQUE NOT NULL
+    - name: TEXT NOT NULL
+    - avatar_url: TEXT (optional profile picture URL)
+    - role: TEXT CHECK (role IN ('creator', 'consumer'))
+    - bio: TEXT (optional user biography)
+    - created_at: TIMESTAMPTZ DEFAULT NOW()
+    - updated_at: TIMESTAMPTZ (auto-updated via trigger)
+  
+  Indexes:
+    - idx_users_email ON email
+    - idx_users_role ON role
+
+public.media
+  Stores media metadata. Actual files stored in Azure Blob Storage.
+  
+  Columns:
+    - id: UUID PK
+    - creator_id: UUID FK (references users.id ON DELETE CASCADE)
+    - title: TEXT NOT NULL
+    - caption: TEXT NOT NULL
+    - type: TEXT CHECK (type IN ('image', 'video'))
+    - url: TEXT NOT NULL (Azure Blob Storage URL)
+    - thumbnail_url: TEXT (optional thumbnail URL)
+    - location: TEXT NOT NULL (geographic location/tag)
+    - people: TEXT[] (array of tagged person names)
+    - views_count: INTEGER DEFAULT 0
+    - average_rating: DECIMAL(3,2) DEFAULT 0.00
+    - ratings_count: INTEGER DEFAULT 0
+    - comments_count: INTEGER DEFAULT 0
+    - created_at: TIMESTAMPTZ DEFAULT NOW()
+    - updated_at: TIMESTAMPTZ (auto-updated)
+  
+  Indexes:
+    - idx_media_creator_id ON creator_id
+    - idx_media_type ON type
+    - idx_media_created_at ON created_at DESC
+    - idx_media_average_rating ON average_rating DESC
+    - idx_media_location ON location
+    - idx_media_search (GIN index for full-text search on title + caption)
+
+public.comments
+  User comments on media items.
+  
+  Columns:
+    - id: UUID PK
+    - media_id: UUID FK (references media.id ON DELETE CASCADE)
+    - user_id: UUID FK (references users.id ON DELETE CASCADE)
+    - content: TEXT NOT NULL
+    - created_at: TIMESTAMPTZ DEFAULT NOW()
+    - updated_at: TIMESTAMPTZ (auto-updated)
+  
+  Indexes:
+    - idx_comments_media_id ON media_id
+    - idx_comments_user_id ON user_id
+    - idx_comments_created_at ON created_at DESC
+
+public.ratings
+  User ratings (1-5 stars) for media.
+  
+  Columns:
+    - id: UUID PK
+    - media_id: UUID FK (references media.id ON DELETE CASCADE)
+    - user_id: UUID FK (references users.id ON DELETE CASCADE)
+    - rating: INTEGER CHECK (rating >= 1 AND rating <= 5)
+    - created_at: TIMESTAMPTZ DEFAULT NOW()
+    - updated_at: TIMESTAMPTZ (auto-updated)
+  
+  Constraints:
+    - UNIQUE(media_id, user_id) - one rating per user per media
+  
+  Indexes:
+    - idx_ratings_media_id ON media_id
+    - idx_ratings_user_id ON user_id
+
+
+DATABASE TRIGGERS:
+------------------
+
+1. handle_updated_at()
+   Automatically updates the 'updated_at' timestamp on any table update.
+   Applied to: users, media, comments, ratings
+
+2. update_media_comments_count()
+   Increments/decrements media.comments_count when comments are added/deleted.
+   Triggered on: INSERT, DELETE on comments table
+
+3. update_media_ratings()
+   Recalculates media.average_rating and media.ratings_count when ratings change.
+   Triggered on: INSERT, UPDATE, DELETE on ratings table
+
+
+ROW-LEVEL SECURITY (RLS) POLICIES:
+-----------------------------------
+
+users table:
+  - SELECT: Anyone can read all user profiles
+  - INSERT: Users can create their own profile (auth.uid() = id)
+  - UPDATE: Users can only update their own profile
+
+media table:
+  - SELECT: Anyone can view all media
+  - INSERT: Only creators can upload media (role='creator' AND auth.uid()=creator_id)
+  - UPDATE: Creators can only update their own media
+  - DELETE: Creators can only delete their own media
+
+comments table:
+  - SELECT: Anyone can read all comments
+  - INSERT: Authenticated users can add comments (auth.uid() = user_id)
+  - UPDATE: Users can only edit their own comments
+  - DELETE: Users can only delete their own comments
+
+ratings table:
+  - SELECT: Anyone can read all ratings
+  - INSERT: Authenticated users can add ratings (auth.uid() = user_id)
+  - UPDATE: Users can only update their own ratings
+  - DELETE: Users can only delete their own ratings
+
+
+DATABASE FUNCTIONS:
+-------------------
+
+increment_media_views(media_uuid UUID)
+  Atomically increments the views_count for a media item.
+  Called when: User views media detail page
+
+
+4. AUTHENTICATION SYSTEM
+================================================================================
+
+AUTHENTICATION PROVIDER: Supabase Auth
+
+USER ROLES:
+-----------
+1. Creator: Can upload, manage, edit, and delete media
+2. Consumer: Can browse, view, comment, and rate media
+
+AUTHENTICATION FLOW:
+--------------------
+
+Signup Process:
+  1. User fills signup form (name, email, password, role selection)
+  2. Frontend calls authService.signup({name, email, password, role})
+  3. Service creates auth user via supabase.auth.signUp()
+  4. Service creates profile in public.users table with role
+  5. User receives confirmation email (if enabled)
+  6. User is redirected to appropriate dashboard based on role
+
+Login Process:
+  1. User enters email and password
+  2. Frontend calls authService.login(email, password)
+  3. Service authenticates via supabase.auth.signInWithPassword()
+  4. On success, fetch user profile from public.users
+  5. Store user data in useAuthStore (Zustand)
+  6. Redirect to role-specific dashboard:
+     - Creator → /creator/dashboard
+     - Consumer → /consumer/feed
+
+Logout Process:
+  1. User clicks logout button
+  2. Frontend calls authService.logout()
+  3. Service calls supabase.auth.signOut()
+  4. Clear useAuthStore state
+  5. Redirect to login page
+
+Session Management:
+  - Supabase handles JWT token refresh automatically
+  - Tokens stored in browser localStorage
+  - useAuthStore.initialize() checks for existing session on app load
+
+Protected Routes:
+  - ProtectedRoute component wraps private pages
+  - Checks isAuthenticated from useAuthStore
+  - Validates user role against allowedRoles prop
+  - Redirects unauthorized users to login page
+
+
+5. MEDIA UPLOAD & STORAGE
+================================================================================
+
+STORAGE PROVIDER: Azure Blob Storage
+
+UPLOAD WORKFLOW:
+----------------
+
+┌──────────────┐
+│ User selects │
+│ media file   │
+└──────┬───────┘
+       │
+       ▼
+┌─────────────────────────┐
+│ Frontend validates:     │
+│ - File type (image/vid) │
+│ - File size (<50MB)     │
+└──────┬──────────────────┘
+       │
+       ▼
+┌────────────────────────────────┐
+│ storageService.uploadFile()    │
+│ - Generate unique blob name    │
+│ - userId/mediaId.extension     │
+│ - Upload to Azure container    │
+│ - Set Content-Type header      │
+└──────┬─────────────────────────┘
+       │
+       ▼
+┌───────────────────────────┐
+│ Return blob URL (no SAS)  │
+└──────┬────────────────────┘
+       │
+       ▼
+┌────────────────────────────────┐
+│ mediaService.createMedia()     │
+│ - Save URL to database         │
+│ - Add title, caption, location │
+│ - Set creator_id = user.id     │
+└──────┬─────────────────────────┘
+       │
+       ▼
+┌──────────────────┐
+│ Success! Redirect│
+│ to Manage Media  │
+└──────────────────┘
+
+
+AZURE BLOB STORAGE CONFIGURATION:
+----------------------------------
+Container Name: media-uploads (configurable)
+Authentication: SAS Token (Shared Access Signature)
+Access Level: Private (requires SAS token to access)
+
+Environment Variables:
+  VITE_AZURE_STORAGE_ACCOUNT_NAME: Azure storage account name
+  VITE_AZURE_STORAGE_CONTAINER_NAME: Container for uploads (default: media-uploads)
+  VITE_AZURE_STORAGE_SAS_TOKEN: SAS token for authentication
+
+Blob Naming Convention:
+  {userId}/{fileId}.{extension}
+  Example: 123e4567-e89b-12d3/media-abc123.jpg
+
+URL Generation:
+  Stored URL (database): https://{account}.blob.core.windows.net/{container}/{blob}
+  Access URL (with SAS): {storedURL}?{sasToken}
+  
+  storageService.getFileUrl(url) appends SAS token dynamically
+
+
+FILE VALIDATION:
+----------------
+Maximum file size: 50 MB
+
+Allowed image types:
+  - image/jpeg
+  - image/png
+  - image/gif
+  - image/webp
+
+Allowed video types:
+  - video/mp4
+  - video/webm
+  - video/quicktime
+
+Validation performed in:
+  - Frontend: MediaUpload.jsx (before upload)
+  - Config: lib/config/config.js (upload limits)
+
+
+MEDIA DELETION:
+---------------
+When deleting media:
+  1. Fetch media record from database to get blob URL
+  2. Extract blob name from URL
+  3. Call storageService.deleteFile(blobName)
+  4. Delete from Azure Blob Storage
+  5. Delete database record (CASCADE deletes comments & ratings)
+
+
+6. COMMENT & RATING SYSTEMS
+================================================================================
+
+COMMENT SYSTEM:
+---------------
+
+Adding Comments:
+  1. User types comment in CommentSection component
+  2. Click "Post Comment" button
+  3. Frontend calls commentService.addComment(mediaId, {userId, userName, 
+     userAvatar, content})
+  4. Service inserts into comments table
+  5. Database trigger increments media.comments_count
+  6. Comment appears immediately in UI (optimistic update)
+
+Fetching Comments:
+  - commentService.getComments(mediaId)
+  - Returns comments with user info via JOIN
+  - Ordered by created_at DESC (newest first)
+  - Includes: id, content, userId, userName, userAvatar, createdAt
+
+Deleting Comments:
+  - commentService.deleteComment(commentId)
+  - Only comment author can delete (enforced by RLS)
+  - Database trigger decrements media.comments_count
+
+Comment Display:
+  - User avatar and name
+  - Comment text content
+  - Relative timestamp ("5 minutes ago", "2 hours ago")
+  - Empty state when no comments exist
+
+
+RATING SYSTEM:
+--------------
+
+Adding/Updating Ratings:
+  1. User clicks star rating (1-5 stars)
+  2. Frontend calls commentService.addRating(mediaId, rating, userId)
+  3. Service checks if user already rated this media
+  4. If exists: UPDATE rating value
+  5. If new: INSERT new rating
+  6. Database trigger recalculates:
+     - media.average_rating (AVG of all ratings)
+     - media.ratings_count (COUNT of ratings)
+  7. Returns updated averageRating and totalRatings
+
+Fetching User Rating:
+  - commentService.getUserRating(mediaId, userId)
+  - Returns user's current rating (0 if not rated)
+  - Used to display active stars on media detail page
+
+Rating Display:
+  - RatingComponent with value and readonly props
+  - Shows star icons (filled/outline based on value)
+  - Display count of total ratings
+  - Average rating badge on media cards
+
+
+7. STATE MANAGEMENT
+================================================================================
+
+STATE LIBRARY: Zustand (lightweight alternative to Redux)
+
+STORES:
+-------
+
+useAuthStore (src/store/useAuthStore.js)
+  Purpose: Manage authentication state globally
+  
+  State:
+    - user: {id, email, name, avatar, role} | null
+    - isAuthenticated: boolean
+  
+  Actions:
+    - setUser(user): Store user data after login
+    - clearUser(): Clear user data on logout
+    - initialize(): Check for existing Supabase session on app load
+
+useMediaStore (src/store/useMediaStore.js)
+  Purpose: Manage media filters and search across consumer pages
+  
+  State:
+    - filters: {
+        search: string,
+        location: string,
+        sortBy: 'newest' | 'oldest' | 'popular' | 'highest-rated',
+        dateRange: string
+      }
+  
+  Actions:
+    - setFilters(updates): Update one or more filter values
+    - resetFilters(): Clear all filters to defaults
+
+ui-states.js (src/store/ui-states.js)
+  Purpose: Manage UI state (modals, loading indicators)
+  
+  State:
+    - isLoading: boolean
+    - activeModal: string | null
+  
+  Actions:
+    - setLoading(bool): Show/hide global loading indicator
+    - openModal(modalId): Open specific modal
+    - closeModal(): Close active modal
+
+
+USAGE EXAMPLE:
+--------------
+```javascript
+import {useAuthStore} from '@/store/useAuthStore';
+
+function Header() {
+  const {user, isAuthenticated, clearUser} = useAuthStore();
+  
+  const handleLogout = async () => {
+    await authService.logout();
+    clearUser();
+  };
+  
+  return (
+    <div>
+      {isAuthenticated && <p>Welcome, {user.name}!</p>}
+      <button onClick={handleLogout}>Logout</button>
+    </div>
+  );
+}
+```
+
+
+8. ROUTING & NAVIGATION
+================================================================================
+
+ROUTING LIBRARY: React Router DOM v7
+
+ROUTE STRUCTURE:
+----------------
+
+Public Routes:
+  /                       → Redirect based on auth status
+  /login                  → Login page (AuthLayout)
+  /signup/consumer        → Consumer signup (AuthLayout)
+  /signup/creator         → Creator signup (AuthLayout)
+
+Creator Routes (role='creator'):
+  /creator/dashboard      → Creator dashboard overview (CreatorLayout)
+  /creator/upload         → Upload new media (CreatorLayout)
+  /creator/manage         → Manage uploaded media (CreatorLayout)
+  /creator/edit/:id       → Edit media details (CreatorLayout)
+
+Consumer Routes (role='consumer'):
+  /consumer/feed          → Browse all media (ConsumerLayout)
+  /consumer/media/:id     → View media detail (ConsumerLayout)
+
+Error Routes:
+  /404                    → Not Found page
+  *                       → Catch-all redirect to /404
+
+
+ROUTE CONFIGURATION:
+--------------------
+Routes defined in: src/lib/constants/routes.js
+
+Each route object:
+  - path: URL pattern
+  - element: React component to render
+  - layout: 'auth' | 'creator' | 'consumer' | null
+  - isPrivate: boolean (requires authentication)
+  - allowedRoles: ['creator'] | ['consumer'] | ['creator', 'consumer']
+
+
+PROTECTED ROUTE LOGIC:
+----------------------
+ProtectedRoute.jsx wraps private routes:
+
+1. Check if user is authenticated (useAuthStore)
+2. If not authenticated → Redirect to /login
+3. If authenticated, check user.role against allowedRoles
+4. If role not allowed → Redirect to appropriate dashboard
+5. If authorized → Render child component
+
+Example:
+```javascript
+<Route 
+  path="/creator/upload" 
+  element={
+    <ProtectedRoute allowedRoles={['creator']}>
+      <MediaUpload />
+    </ProtectedRoute>
+  }
+/>
+```
+
+
+9. API SERVICES
+================================================================================
+
+SERVICE LAYER ARCHITECTURE:
+---------------------------
+All API calls abstracted into service modules in src/services/
+
+authService.js
+  Purpose: Handles all authentication operations
+  
+  Methods:
+    - signup({name, email, password, role})
+      Creates new user in Supabase Auth + public.users table
+      
+    - login(email, password)
+      Authenticates user, fetches profile, returns user object
+      
+    - logout()
+      Signs out user from Supabase session
+      
+    - getCurrentUser()
+      Fetches current authenticated user's profile
+      
+    - updateProfile(userId, updates)
+      Updates user profile data (name, avatar, bio)
+
+mediaService.js
+  Purpose: Media CRUD operations and queries
+  
+  Methods:
+    - getAllMedia(filters)
+      Fetches all media with optional filters (search, location, sortBy)
+      Joins with users table to get creator info
+      Returns: Array of media objects with creator details
+      
+    - getMediaById(id)
+      Fetches single media item with full details
+      Includes comments, ratings, creator info
+      Increments view count
+      Returns: Complete media object
+      
+    - getMediaByCreator(creatorId)
+      Fetches all media uploaded by a specific creator
+      Returns: Array of media objects
+      
+    - createMedia(mediaData)
+      Inserts new media record into database
+      Data: {creatorId, title, caption, type, url, thumbnail, location, people}
+      Returns: Created media object with ID
+      
+    - updateMedia(id, updates)
+      Updates media metadata (title, caption, location, people)
+      Returns: Updated media object
+      
+    - deleteMedia(id)
+      Deletes media from database + Azure Blob Storage
+      Cascades to delete comments and ratings
+      Returns: {success: true}
+      
+    - incrementViews(id)
+      Calls database RPC function to increment views_count
+      Non-blocking operation
+
+commentService.js
+  Purpose: Comment and rating operations
+  
+  Methods:
+    - getComments(mediaId)
+      Fetches all comments for a media item
+      Joins with users table for author info
+      Ordered by newest first
+      Returns: Array of comment objects
+      
+    - addComment(mediaId, {userId, userName, userAvatar, content})
+      Inserts new comment
+      Triggers update to media.comments_count
+      Returns: Created comment object
+      
+    - deleteComment(commentId)
+      Deletes comment (RLS enforces ownership)
+      Triggers decrement of media.comments_count
+      Returns: {success: true}
+      
+    - addRating(mediaId, rating, userId)
+      Upserts user rating (INSERT or UPDATE)
+      Triggers recalculation of media.average_rating
+      Returns: {averageRating, totalRatings}
+      
+    - getUserRating(mediaId, userId)
+      Fetches user's current rating for media
+      Returns: rating value (0 if not rated)
+
+storageService.js
+  Purpose: Azure Blob Storage operations
+  
+  Methods:
+    - uploadFile(file, userId, mediaId)
+      Uploads file to Azure Blob Storage
+      Sets Content-Type based on file.type
+      Returns: {url, blobName, size, contentType}
+      
+    - deleteFile(blobName)
+      Deletes blob from Azure storage
+      Returns: {success: true}
+      
+    - getFileUrl(url)
+      Appends SAS token to blob URL for access
+      Handles URLs with/without existing query params
+      Returns: Full URL with SAS token
+      
+    - getBlobUrl(blobName)
+      Constructs full blob URL from name
+      Returns: URL with SAS token
+
+
+ERROR HANDLING:
+---------------
+All service methods throw errors on failure:
+```javascript
+try {
+  const media = await mediaService.getMediaById(id);
+} catch (error) {
+  console.error('Failed to fetch media:', error);
+  // Show user-friendly error message
+}
+```
+
+
+10. DEPLOYMENT & CONFIGURATION
+================================================================================
+
+ENVIRONMENT VARIABLES:
+----------------------
+Create .env file in project root:
+
+```
+# Supabase Configuration
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+
+# Azure Blob Storage
+VITE_AZURE_STORAGE_ACCOUNT_NAME=yourstorageaccount
+VITE_AZURE_STORAGE_CONTAINER_NAME=media-uploads
+VITE_AZURE_STORAGE_SAS_TOKEN=?sv=2021-06-08&ss=b&srt=sco...
+```
+
+Configuration loaded in: src/lib/config/config.js
+
+
+DATABASE SETUP:
+---------------
+1. Create Supabase project at https://supabase.com
+2. Execute SQL migrations in order:
+   database/01_create_users_table.sql
+   database/02_create_media_table.sql
+   database/03_create_comments_table.sql
+   database/04_create_ratings_table.sql
+   database/05_enable_rls_policies.sql
+   database/06_create_helper_functions.sql
+   database/07_create_storage_setup.sql
+   database/08_fix_signup_rls_policy.sql
+3. Copy project URL and anon key to .env
+
+
+AZURE STORAGE SETUP:
+--------------------
+1. Create Azure Storage Account
+2. Create blob container named 'media-uploads'
+3. Set container access level to Private
+4. Generate SAS token with permissions:
+   - Read, Add, Create, Write, Delete, List
+   - Allowed services: Blob
+   - Allowed resource types: Container, Object
+   - Set expiration date (1+ year recommended)
+5. Copy account name, container name, and SAS token to .env
+
+For detailed setup: See database/azure-integration-guide.md
+
+
+DEVELOPMENT SERVER:
+-------------------
+Install dependencies:
+  npm install
+
+Start dev server:
+  npm run dev
+  
+Server runs at: http://localhost:5173
+
+
+PRODUCTION BUILD:
+-----------------
+Build optimized production bundle:
+  npm run build
+  
+Output directory: dist/
+
+Preview production build locally:
+  npm run preview
+
+
+DEPLOYMENT OPTIONS:
+-------------------
+1. Vercel
+   - Connect GitHub repository
+   - Add environment variables in dashboard
+   - Auto-deploys on git push
+
+2. Netlify
+   - Connect GitHub repository  
+   - Build command: npm run build
+   - Publish directory: dist
+   - Add environment variables
+
+3. Azure Static Web Apps
+   - Integrate with GitHub
+   - Configure build settings
+   - Uses Azure natively for storage
+
+4. Self-hosted
+   - Build files with `npm run build`
+   - Serve dist/ folder with nginx or Apache
+   - Configure reverse proxy if needed
+
+
+CODE QUALITY TOOLS:
+-------------------
+Linting:
+  npm run lint       # Check for issues
+  npm run lint:fix   # Auto-fix issues
+
+Formatting:
+  npm run format     # Format all files
+  npm run prettier   # Check formatting
+
+Git Hooks (Husky):
+  - pre-commit: Runs linting on staged files
+  - commit-msg: Validates commit message format
+
+Commit Convention:
+  feat: New feature
+  fix: Bug fix
+  docs: Documentation changes
+  style: Code formatting
+  refactor: Code restructuring
+  test: Test changes
+  chore: Build/tooling updates
+
+Example: feat(auth): add password reset functionality
+
+
+MONITORING & LOGGING:
+---------------------
+- Console logs for development debugging
+- Supabase dashboard for database analytics
+- Azure portal for storage metrics
+- Browser DevTools for network inspection
+- Consider adding:
+  - Sentry for error tracking
+  - Google Analytics for user metrics
+  - LogRocket for session replay
+
+
+================================================================================
+                            END OF DOCUMENTATION
+================================================================================
+
+For additional information or support:
+- Project repository: [Add your repo URL]
+- Supabase docs: https://supabase.com/docs
+- Azure Storage docs: https://learn.microsoft.com/azure/storage/
+- React docs: https://react.dev
+
+Last updated: January 2026
+Version: 1.0.0
