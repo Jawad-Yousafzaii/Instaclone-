@@ -2,7 +2,7 @@ const env = import.meta.env;
 
 export const config = {
 	app: {
-		name: "MediaShare",
+		name: "LuminaCloud",
 		description: "Cloud-native media sharing platform",
 		version: "1.0.0",
 	},
@@ -18,6 +18,11 @@ export const config = {
 		sasToken: env.VITE_AZURE_STORAGE_SAS_TOKEN || "",
 	},
 
+	azureAI: {
+		key: env.VITE_AZURE_AI_KEY || "",
+		endpoint: env.VITE_AZURE_AI_ENDPOINT || "",
+	},
+
 	api: {
 		timeout: 30000,
 		retryAttempts: 3,
@@ -31,8 +36,8 @@ export const config = {
 	},
 
 	features: {
-		mockAuth: false, // Disabled - using real Supabase Auth
-		mockData: false, // Disabled - using real Supabase database
+		mockAuth: false,
+		mockData: false,
 		enableComments: true,
 		enableRatings: true,
 	},

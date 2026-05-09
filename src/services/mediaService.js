@@ -2,27 +2,61 @@ import {supabase} from "@/lib/supabase";
 import {storageService} from "./storageService";
 
 export const mediaService = {
-	/**
-	 * Get all media with filters
-	 * @param {Object} filters - {search, location, sortBy}
-	 * @returns {Promise<Array>}
-	 */
+	async analyzeImageWithAI(file) {
+		const endpoint = import.meta.env.VITE_AZURE_AI_ENDPOINT;
+		const apiKey = import.meta.env.VITE_AZURE_AI_KEY;
+
+		if (!endpoint || !apiKey) {
+			throw new Error("Azure AI configuration missing");
+		}
+
+		console.log("AI Call Started...");
+
+		const cleanEndpoint = endpoint.replace(/\/$/, "");
+		const url = `${cleanEndpoint}/vision/v3.2/analyze?visualFeatures=Description,Tags`;
+
+		const response = await fetch(url, {
+			method: "POST",
+			headers: {
+				"Ocp-Apim-Subscription-Key": apiKey,
+				"Content-Type": "application/octet-stream",
+			},
+			body: file,
+		});
+
+		if (!response.ok) {
+			const errText = await response.text();
+			console.error("AI Error Response:", errText);
+			throw new Error("Failed to analyze image with Azure AI");
+		}
+
+		const data = await response.json();
+		console.log("AI Response:", data);
+
+		return {
+			description: data.description?.captions?.[0]?.text || "",
+			tags: (data.tags || []).map((t) => t.name).join(", "),
+		};
+	},
+
 	async getAllMedia(filters = {}) {
 		let query = supabase
 			.from("media")
-			.select("*")
+			.select("*, ratings(*)")
 			.order("created_at", {ascending: false});
 
-		// Apply search filter
 		if (filters.search) {
 			query = query.or(
 				`title.ilike.%${filters.search}%,caption.ilike.%${filters.search}%`,
 			);
 		}
 
-		// Apply location filter
 		if (filters.location) {
 			query = query.ilike("location", `%${filters.location}%`);
+		}
+
+		if (filters.type) {
+			query = query.eq("type", filters.type);
 		}
 
 		const {data, error} = await query;
@@ -31,7 +65,6 @@ export const mediaService = {
 			throw new Error(error.message);
 		}
 
-		// Fetch creator info separately for each media
 		const mediaWithCreators = await Promise.all(
 			data.map(async (m) => {
 				const {data: creator} = await supabase
@@ -51,11 +84,17 @@ export const mediaService = {
 						: storageService.getFileUrl(m.url),
 					location: m.location,
 					people: m.people || [],
-					views: m.views_count,
-					averageRating: parseFloat(m.average_rating) || 0,
-					totalRatings: m.ratings_count,
+					views: m.views_count || 0,
+					averageRating: m.ratings && m.ratings.length > 0
+						? m.ratings.reduce((sum, r) => sum + r.rating, 0) / m.ratings.length
+						: 0,
+					totalRatings: m.ratings ? m.ratings.length : 0,
 					comments: [],
-					ratings: [],
+					ratings: (m.ratings || []).map((r) => ({
+						userId: r.user_id,
+						rating: r.rating,
+						createdAt: r.created_at,
+					})),
 					creatorId: m.creator_id,
 					creatorName: creator?.name || "Unknown",
 					creatorEmail: creator?.email || "",
@@ -68,7 +107,6 @@ export const mediaService = {
 
 		let media = mediaWithCreators;
 
-		// Apply sorting
 		if (filters.sortBy === "oldest") {
 			media.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 		} else if (filters.sortBy === "popular") {
@@ -80,13 +118,7 @@ export const mediaService = {
 		return media;
 	},
 
-	/**
-	 * Get media by ID with comments and ratings
-	 * @param {string} id
-	 * @returns {Promise<Object>}
-	 */
 	async getMediaById(id) {
-		// Get media with creator info
 		const {data: mediaData, error: mediaError} = await supabase
 			.from("media")
 			.select(
@@ -107,7 +139,6 @@ export const mediaService = {
 			throw new Error("Media not found");
 		}
 
-		// Get comments with user info
 		const {data: comments} = await supabase
 			.from("comments")
 			.select(
@@ -123,13 +154,11 @@ export const mediaService = {
 			.eq("media_id", id)
 			.order("created_at", {ascending: false});
 
-		// Get ratings
 		const {data: ratings} = await supabase
 			.from("ratings")
 			.select("*")
 			.eq("media_id", id);
 
-		// Increment views
 		await this.incrementViews(id);
 
 		return {
@@ -143,7 +172,7 @@ export const mediaService = {
 				: storageService.getFileUrl(mediaData.url),
 			location: mediaData.location,
 			people: mediaData.people || [],
-			views: mediaData.views_count + 1, // Already incremented
+			views: mediaData.views_count + 1,
 			averageRating: parseFloat(mediaData.average_rating) || 0,
 			totalRatings: mediaData.ratings_count,
 			comments: (comments || []).map((c) => ({
@@ -168,15 +197,10 @@ export const mediaService = {
 		};
 	},
 
-	/**
-	 * Get media by creator
-	 * @param {string} creatorId
-	 * @returns {Promise<Array>}
-	 */
 	async getMediaByCreator(creatorId) {
 		const {data, error} = await supabase
 			.from("media")
-			.select("*")
+			.select("*, ratings(*)")
 			.eq("creator_id", creatorId)
 			.order("created_at", {ascending: false});
 
@@ -195,19 +219,21 @@ export const mediaService = {
 				: storageService.getFileUrl(m.url),
 			location: m.location,
 			people: m.people || [],
-			views: m.views_count,
-			averageRating: parseFloat(m.average_rating) || 0,
-			totalRatings: m.ratings_count,
+			views: m.views_count || 0,
+			averageRating: m.ratings && m.ratings.length > 0
+				? m.ratings.reduce((sum, r) => sum + r.rating, 0) / m.ratings.length
+				: 0,
+			totalRatings: m.ratings ? m.ratings.length : 0,
+			ratings: (m.ratings || []).map((r) => ({
+				userId: r.user_id,
+				rating: r.rating,
+				createdAt: r.created_at,
+			})),
 			createdAt: m.created_at,
 			updatedAt: m.updated_at,
 		}));
 	},
 
-	/**
-	 * Create new media
-	 * @param {Object} mediaData
-	 * @returns {Promise<Object>}
-	 */
 	async createMedia(mediaData) {
 		const {data, error} = await supabase
 			.from("media")
@@ -237,12 +263,6 @@ export const mediaService = {
 		};
 	},
 
-	/**
-	 * Update media
-	 * @param {string} id
-	 * @param {Object} updates
-	 * @returns {Promise<Object>}
-	 */
 	async updateMedia(id, updates) {
 		const updateData = {
 			...(updates.title && {title: updates.title}),
@@ -265,13 +285,7 @@ export const mediaService = {
 		return data;
 	},
 
-	/**
-	 * Delete media and associated blob
-	 * @param {string} id
-	 * @returns {Promise<{success: boolean}>}
-	 */
 	async deleteMedia(id) {
-		// Get media to find blob name
 		const {data: media} = await supabase
 			.from("media")
 			.select("url")
@@ -279,7 +293,6 @@ export const mediaService = {
 			.single();
 
 		if (media && media.url) {
-			// Extract blob name from URL
 			const urlParts = media.url.split("/");
 			const containerIndex = urlParts.indexOf("media-uploads");
 			if (containerIndex !== -1) {
@@ -292,7 +305,6 @@ export const mediaService = {
 			}
 		}
 
-		// Delete from database (will cascade to comments and ratings)
 		const {error} = await supabase.from("media").delete().eq("id", id);
 
 		if (error) {
@@ -302,12 +314,7 @@ export const mediaService = {
 		return {success: true};
 	},
 
-	/**
-	 * Increment view count
-	 * @param {string} id
-	 */
 	async incrementViews(id) {
-		// Call database function
 		const {error} = await supabase.rpc("increment_media_views", {
 			media_uuid: id,
 		});

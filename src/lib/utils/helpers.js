@@ -34,11 +34,17 @@ export const getFileExtension = (filename) => {
 };
 
 export const isImageFile = (file) => {
-	return file.type.startsWith("image/");
+	if (!file) return false;
+	if (file.type) return file.type.startsWith("image/");
+	const ext = getFileExtension(file.name);
+	return ["jpg", "jpeg", "png", "gif", "webp", "heic", "svg", "bmp"].includes(ext);
 };
 
 export const isVideoFile = (file) => {
-	return file.type.startsWith("video/");
+	if (!file) return false;
+	if (file.type) return file.type.startsWith("video/");
+	const ext = getFileExtension(file.name);
+	return ["mp4", "webm", "ogg", "mov", "avi", "mkv"].includes(ext);
 };
 
 export const formatFileSize = (bytes) => {

@@ -56,51 +56,40 @@ export default function Login() {
 	};
 
 	return (
-		<div className="animate-in fade-in slide-in-from-right-8 duration-1000">
-			{/* Header */}
-			<div className="mb-12">
-				<h2 className="text-text-primary text-5xl font-black tracking-tighter md:text-6xl">
-					Welcome back
-				</h2>
-				<p className="text-text-tertiary mt-4 text-lg font-bold tracking-tight">
-					Enter your credentials to access the studio.
+		<div className="w-full">
+			<div className="mb-6 text-center">
+				<p className="text-gray-500 font-semibold text-sm">
+					Sign in to see photos and videos from your friends.
 				</p>
 			</div>
 
-			{/* Error Alert */}
 			{errors.general && (
-				<div className="bg-accent-magenta/5 border-accent-magenta/20 text-accent-magenta mb-8 rounded-2xl border p-5 text-sm font-bold">
+				<div className="mb-4 rounded border border-red-100 bg-red-50 p-3 text-center text-sm font-semibold text-red-500">
 					{errors.general}
 				</div>
 			)}
 
-			<form onSubmit={handleSubmit} className="space-y-10">
-				{/* Unique Role Selection */}
-				<div className="space-y-4">
-					<label className="text-text-muted ml-2 text-[10px] font-black tracking-[0.3em] uppercase">
-						Choose Studio
-					</label>
+			<form onSubmit={handleSubmit} className="space-y-4">
+				<div className="space-y-1.5">
+					<label className="text-xs font-semibold text-gray-500 uppercase">Account Type</label>
 					<RoleSelector
 						value={formData.role}
 						onChange={(role) => setFormData({...formData, role})}
 					/>
 				</div>
 
-				{/* Form Fields - Focus on spacing and clarity */}
-				<div className="space-y-6">
+				<div className="space-y-3">
 					<Input
-						label="Email"
 						type="email"
-						placeholder="studio@VELORA.com"
+						placeholder="Email address"
 						value={formData.email}
 						onChange={(e) => setFormData({...formData, email: e.target.value})}
 						error={errors.email}
 					/>
 
 					<Input
-						label="Password"
 						type="password"
-						placeholder="••••••••"
+						placeholder="Password"
 						value={formData.password}
 						onChange={(e) =>
 							setFormData({...formData, password: e.target.value})
@@ -109,30 +98,28 @@ export default function Login() {
 					/>
 				</div>
 
-				{/* Submit Button - Premium Presence */}
-				<div className="space-y-6 pt-4">
+				<div className="pt-2">
 					<Button
 						type="submit"
-						variant="primary"
-						className="shadow-glow-pink h-auto w-full rounded-[2rem] py-5 text-base font-black tracking-widest uppercase"
+						className="w-full rounded bg-[#FFB6C1] py-2 text-sm font-semibold text-white hover:bg-[#f48fb1] transition-colors"
 						loading={isLoading}
 					>
-						Sign Into Studio
+						Log in
 					</Button>
-
-					<div className="text-center">
-						<p className="text-text-tertiary text-sm font-bold tracking-tight">
-							New to the studio?{" "}
-							<button
-								onClick={() => navigate(ROUTES.AUTH.CONSUMER_SIGNUP)}
-								className="text-accent-pink ml-1 font-black hover:underline"
-							>
-								Request Access
-							</button>
-						</p>
-					</div>
 				</div>
 			</form>
+
+			<div className="mt-6 flex items-center justify-center space-x-2 border-t border-gray-100 pt-6">
+				<p className="text-sm text-gray-900">
+					Don't have an account?{" "}
+					<button
+						onClick={() => navigate(ROUTES.AUTH.CONSUMER_SIGNUP)}
+						className="font-semibold text-[#FFB6C1] hover:text-[#f48fb1]"
+					>
+						Sign up
+					</button>
+				</p>
+			</div>
 		</div>
 	);
 }

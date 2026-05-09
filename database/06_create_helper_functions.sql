@@ -9,7 +9,7 @@ CREATE OR REPLACE FUNCTION public.increment_media_views(media_uuid UUID)
 RETURNS void AS $$
 BEGIN
     UPDATE public.media
-    SET views_count = views_count + 1
+        SET views_count = coalesce(views_count, 0) + 1
     WHERE id = media_uuid;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -9,10 +9,10 @@ export default function Input({
 	...props
 }) {
 	const inputClasses = cn(
-		"w-full px-4 py-4 rounded-2xl bg-white/40 border border-accent-grey text-text-primary placeholder:text-text-muted transition-all duration-300 backdrop-blur-md",
-		"focus:outline-none focus:border-accent-pink/40 focus:bg-white focus:ring-4 focus:ring-accent-pink/5",
+		"w-full px-4 py-4 rounded-2xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 transition-all duration-300",
+		"focus:outline-none focus:border-[#FFB6C1] focus:ring-4 focus:ring-[#FFB6C1]/15",
 		error &&
-			"border-accent-magenta/50 focus:border-accent-magenta/50 focus:ring-accent-magenta/5",
+			"border-[#f48fb1]/60 focus:border-[#f48fb1]/60 focus:ring-[#f48fb1]/10",
 		"disabled:opacity-50 disabled:cursor-not-allowed",
 		className,
 	);

@@ -99,20 +99,20 @@ export default function FileUploader({
 					onDragLeave={handleDragLeave}
 					onClick={() => fileInputRef.current?.click()}
 					className={cn(
-						"cursor-pointer rounded-[2rem] border-2 border-dashed p-12 text-center transition-all duration-300",
+						"cursor-pointer rounded-2xl border-2 border-dashed p-14 text-center transition-all duration-300 bg-white",
 						isDragging
-							? "border-accent-pink bg-accent-pink/5"
-							: "hover:border-accent-pink/50 border-accent-grey hover:bg-white",
+							? "border-[#FFB6C1] bg-[#FFB6C1]/5 shadow-inner scale-[0.99]"
+							: "border-gray-200 hover:border-[#FFB6C1] hover:bg-gray-50",
 					)}
 				>
-					<div className="flex flex-col items-center gap-6">
-						<div className="gradient-accent shadow-glow-pink flex h-20 w-20 items-center justify-center rounded-[1.5rem]">
+					<div className="flex flex-col items-center gap-5">
+						<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFB6C1]/15 text-[#FFB6C1] group-hover:scale-110 transition-transform">
 							<svg
-								className="h-10 w-10 text-white"
+								className="h-8 w-8"
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke="currentColor"
-								strokeWidth={2.5}
+								strokeWidth={2}
 							>
 								<path
 									strokeLinecap="round"
@@ -123,64 +123,71 @@ export default function FileUploader({
 						</div>
 
 						<div>
-							<p className="text-text-primary mb-2 text-xl font-black tracking-tight">
-								Select or Drop Masterpiece
+							<p className="mb-1 text-lg font-bold text-gray-900">
+								Drag and drop your media
 							</p>
-							<p className="text-text-tertiary text-sm font-bold">
-								Photos or Videos up to 100MB
+							<p className="text-sm font-medium text-gray-500">
+								or click to browse your files
 							</p>
-							<p className="text-accent-pink mt-2 text-xs font-black tracking-widest uppercase opacity-60">
-								JPG • PNG • MP4 • MOV
-							</p>
+							<div className="mt-4 flex items-center justify-center gap-2">
+								<span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">JPG</span>
+								<span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">PNG</span>
+								<span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">MP4</span>
+								<span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">MOV</span>
+							</div>
+							<p className="mt-3 text-xs font-medium text-gray-400">Up to 100MB</p>
 						</div>
 					</div>
 				</div>
 			) : (
-				<div className="border-accent-grey overflow-hidden rounded-[2rem] border bg-white shadow-sm">
+				<div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm relative group">
 					{preview.type === "image" ? (
 						<img
 							src={preview.url}
 							alt="Preview"
-							className="h-72 w-full object-cover"
+							className="h-[300px] w-full object-contain bg-gray-50"
 						/>
 					) : (
 						<video
 							src={preview.url}
 							controls
-							className="h-72 w-full bg-black"
+							className="h-[300px] w-full bg-black"
 						/>
 					)}
 
-					<div className="border-accent-grey flex items-center justify-between border-t p-6">
-						<div>
-							<p className="text-text-primary font-black tracking-tight">
+					<div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+						<div className="flex-1 min-w-0 mr-4">
+							<p className="text-white font-bold tracking-tight truncate text-sm">
 								{preview.name}
 							</p>
-							<p className="text-text-tertiary text-sm font-bold">
+							<p className="text-gray-300 text-xs font-medium">
 								{formatFileSize(preview.size)}
 							</p>
 						</div>
 
 						<button
 							onClick={clearFile}
-							className="bg-accent-grey/50 text-accent-magenta hover:bg-accent-magenta rounded-2xl p-4 font-bold transition-all hover:text-white"
+							className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/90 text-white hover:bg-red-600 transition-colors shrink-0"
+							title="Remove media"
 						>
-							Remove
+							<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+								<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+							</svg>
 						</button>
 					</div>
 				</div>
 			)}
 
 			{error && (
-				<div className="bg-accent-magenta/10 border-accent-magenta/20 text-accent-magenta flex items-center gap-2 rounded-xl border px-4 py-3 text-sm">
-					<svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+				<div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+					<svg className="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
 						<path
 							fillRule="evenodd"
 							d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
 							clipRule="evenodd"
 						/>
 					</svg>
-					{error}
+					<span className="font-medium">{error}</span>
 				</div>
 			)}
 

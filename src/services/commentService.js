@@ -1,11 +1,6 @@
 import {supabase} from "@/lib/supabase";
 
 export const commentService = {
-	/**
-	 * Get comments for media
-	 * @param {string} mediaId
-	 * @returns {Promise<Array>}
-	 */
 	async getComments(mediaId) {
 		const {data, error} = await supabase
 			.from("comments")
@@ -36,12 +31,6 @@ export const commentService = {
 		}));
 	},
 
-	/**
-	 * Add comment to media
-	 * @param {string} mediaId
-	 * @param {Object} commentData - {content, userId, userName, userAvatar}
-	 * @returns {Promise<Object>}
-	 */
 	async addComment(mediaId, commentData) {
 		const {data, error} = await supabase
 			.from("comments")
@@ -69,11 +58,6 @@ export const commentService = {
 		};
 	},
 
-	/**
-	 * Delete comment
-	 * @param {string} commentId
-	 * @returns {Promise<{success: boolean}>}
-	 */
 	async deleteComment(commentId) {
 		const {error} = await supabase
 			.from("comments")
@@ -87,24 +71,15 @@ export const commentService = {
 		return {success: true};
 	},
 
-	/**
-	 * Add or update rating
-	 * @param {string} mediaId
-	 * @param {number} rating
-	 * @param {string} userId
-	 * @returns {Promise<{averageRating: number, totalRatings: number}>}
-	 */
 	async addRating(mediaId, rating, userId) {
-		// Check if rating exists
 		const {data: existing} = await supabase
 			.from("ratings")
 			.select("id")
 			.eq("media_id", mediaId)
 			.eq("user_id", userId)
-			.single();
+			.maybeSingle();
 
 		if (existing) {
-			// Update existing rating
 			const {error} = await supabase
 				.from("ratings")
 				.update({rating})
@@ -114,7 +89,6 @@ export const commentService = {
 				throw new Error(error.message);
 			}
 		} else {
-			// Insert new rating
 			const {error} = await supabase.from("ratings").insert([
 				{
 					media_id: mediaId,
@@ -128,32 +102,37 @@ export const commentService = {
 			}
 		}
 
-		// Get updated stats from media table (automatically updated by trigger)
-		const {data: media} = await supabase
+		const {data: allRatings} = await supabase
+			.from("ratings")
+			.select("rating")
+			.eq("media_id", mediaId);
+
+		const totalRatings = allRatings ? allRatings.length : 0;
+		const averageRating = totalRatings > 0 
+			? allRatings.reduce((sum, r) => sum + r.rating, 0) / totalRatings 
+			: 0;
+
+		await supabase
 			.from("media")
-			.select("average_rating, ratings_count")
-			.eq("id", mediaId)
-			.single();
+			.update({
+				average_rating: averageRating,
+				ratings_count: totalRatings
+			})
+			.eq("id", mediaId);
 
 		return {
-			averageRating: parseFloat(media.average_rating) || 0,
-			totalRatings: media.ratings_count,
+			averageRating,
+			totalRatings,
 		};
 	},
 
-	/**
-	 * Get user's rating for media
-	 * @param {string} mediaId
-	 * @param {string} userId
-	 * @returns {Promise<number>}
-	 */
 	async getUserRating(mediaId, userId) {
 		const {data} = await supabase
 			.from("ratings")
 			.select("rating")
 			.eq("media_id", mediaId)
 			.eq("user_id", userId)
-			.single();
+			.maybeSingle();
 
 		return data ? data.rating : 0;
 	},

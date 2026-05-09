@@ -22,7 +22,8 @@ export default function Avatar({
 		<div className={cn("relative inline-block", className)}>
 			<div
 				className={cn(
-					"from-accent-cyan to-accent-violet flex items-center justify-center overflow-hidden rounded-full bg-gradient-to-br font-semibold text-white ring-2 ring-white/10",
+					"flex items-center justify-center overflow-hidden rounded-full font-semibold text-white ring-2 ring-[#FFB6C1]/20",
+					"bg-gradient-to-br from-[#FFB6C1] to-[#f48fb1]",
 					sizes[size],
 				)}
 			>
@@ -37,7 +38,7 @@ export default function Avatar({
 				)}
 			</div>
 			{online && (
-				<span className="bg-accent-green ring-bg-primary absolute right-0 bottom-0 block h-3 w-3 rounded-full ring-2" />
+				<span className="absolute right-0 bottom-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-white" />
 			)}
 		</div>
 	);

@@ -1,7 +1,7 @@
-export const APP_NAME = "MediaShare";
+export const APP_NAME = "LuminaCloud";
 export const APP_DESCRIPTION = "Cloud-native media sharing platform";
 export const APP_VERSION = "1.0.0";
-export const SUPPORT_EMAIL = "support@mediashare.com";
+export const SUPPORT_EMAIL = "support@luminacloud.com";
 
 export const USER_ROLES = {
 	CREATOR: "creator",
@@ -20,8 +20,9 @@ export const ROUTES = {
 		EDIT: "/creator/edit/:id",
 	},
 	CONSUMER: {
-		FEED: "/feed",
-		MEDIA_DETAIL: "/media/:id",
+		FEED: "/consumer/feed",
+		REELS: "/consumer/reels",
+		MEDIA_DETAIL: "/consumer/media/:id",
 	},
 	NOT_FOUND: "*",
 };

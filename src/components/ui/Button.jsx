@@ -2,14 +2,14 @@ import {cn} from "@/lib/utils/helpers";
 
 const variants = {
 	primary:
-		"gradient-accent text-white hover:shadow-glow-pink hover:scale-[1.02]",
+		"bg-[#FFB6C1] text-white hover:bg-[#f48fb1] hover:shadow-[0_4px_20px_rgba(255,182,193,0.45)] hover:scale-[1.02]",
 	secondary: "glass text-text-primary hover:bg-white hover:shadow-sm",
 	ghost:
-		"bg-transparent text-text-tertiary hover:text-accent-pink hover:bg-accent-pink/5",
+		"bg-transparent text-text-tertiary hover:text-[#FFB6C1] hover:bg-[#FFB6C1]/8",
 	danger:
-		"bg-accent-magenta text-white hover:bg-magenta-600 hover:shadow-glow-magenta",
+		"bg-[#f48fb1] text-white hover:bg-[#ec407a] hover:shadow-[0_4px_20px_rgba(244,143,177,0.4)]",
 	outline:
-		"bg-transparent border border-accent-grey text-text-secondary hover:bg-accent-grey/30 hover:border-accent-pink/30",
+		"bg-transparent border border-[#FFB6C1]/40 text-text-secondary hover:bg-[#FFB6C1]/8 hover:border-[#FFB6C1]/60",
 };
 
 const sizes = {

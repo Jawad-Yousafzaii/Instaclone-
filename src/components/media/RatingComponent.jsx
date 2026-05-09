@@ -21,8 +21,8 @@ export default function RatingComponent({
 	const displayValue = readonly ? value : hoverValue || value;
 
 	return (
-		<div className="flex items-center gap-3">
-			<div className="flex items-center gap-1">
+		<div className="flex items-center gap-2">
+			<div className="flex items-center gap-0.5">
 				{Array.from({length: RATING_MAX}).map((_, index) => {
 					const starValue = index + 1;
 					const isFilled = starValue <= displayValue;
@@ -37,8 +37,8 @@ export default function RatingComponent({
 							onMouseEnter={() => !readonly && setHoverValue(starValue)}
 							onMouseLeave={() => !readonly && setHoverValue(0)}
 							className={cn(
-								"transition-all duration-200",
-								!readonly && "cursor-pointer hover:scale-120",
+								"transition-all duration-150",
+								!readonly && "cursor-pointer hover:scale-125",
 								readonly && "cursor-default",
 							)}
 						>
@@ -46,21 +46,22 @@ export default function RatingComponent({
 								className={cn(
 									sizes[size],
 									isFilled || isHalf
-										? "fill-accent-pink text-accent-pink drop-shadow-sm"
-										: "fill-accent-grey text-accent-grey",
+										? "text-[#FFB6C1] drop-shadow-sm"
+										: "text-gray-200",
 								)}
+								fill="currentColor"
 								viewBox="0 0 24 24"
 							>
 								{isHalf ? (
 									<defs>
-										<linearGradient id={`pink-half-${index}`}>
-											<stop offset="50%" stopColor="#ff2d92" />
-											<stop offset="50%" stopColor="#f0f0f0" />
+										<linearGradient id={`star-half-${index}`}>
+											<stop offset="50%" stopColor="#FFB6C1" />
+											<stop offset="50%" stopColor="#e5e7eb" />
 										</linearGradient>
 									</defs>
 								) : null}
 								<path
-									fill={isHalf ? `url(#pink-half-${index})` : "currentColor"}
+									fill={isHalf ? `url(#star-half-${index})` : "currentColor"}
 									d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
 								/>
 							</svg>
@@ -70,7 +71,7 @@ export default function RatingComponent({
 			</div>
 
 			{showCount && count > 0 && (
-				<span className="text-text-tertiary text-sm font-bold">({count})</span>
+				<span className="text-xs font-semibold text-gray-400">({count})</span>
 			)}
 		</div>
 	);

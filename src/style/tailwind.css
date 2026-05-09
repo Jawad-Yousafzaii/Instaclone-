@@ -3,46 +3,41 @@
 @theme {
 	--font-inter: "Inter", system-ui, -apple-system, sans-serif;
 
-	/* iOS 26 Liquid Glass Color Palette - Adjusted for Light/Pink Theme */
-	--color-glass-white: rgba(255, 255, 255, 0.4);
-	--color-glass-white-strong: rgba(255, 255, 255, 0.6);
-	--color-glass-border: rgba(255, 45, 146, 0.1);
-	--color-glass-border-strong: rgba(255, 45, 146, 0.2);
+	--color-glass-white: rgba(255, 255, 255, 0.6);
+	--color-glass-white-strong: rgba(255, 255, 255, 0.85);
+	--color-glass-border: rgba(255, 182, 193, 0.18);
+	--color-glass-border-strong: rgba(255, 182, 193, 0.32);
 
-	/* Background Gradients - Light/Pink/White */
 	--color-bg-primary: #ffffff;
-	--color-bg-secondary: #fff5f8;
-	--color-bg-tertiary: #ffeef2;
+	--color-bg-secondary: #fff0f3;
+	--color-bg-tertiary: #ffe4ea;
 
-	/* Accent Colors - Pink & White Focused */
-	--color-accent-pink: #ff2d92;
-	--color-accent-magenta: #ff2d92;
-	--color-accent-rose: #ec4899;
-	--color-accent-peach: #fdbab4;
+	--color-accent-pink: #FFB6C1;
+	--color-accent-magenta: #f48fb1;
+	--color-accent-rose: #f06292;
+	--color-accent-peach: #ffd6dc;
 	--color-accent-white: #ffffff;
 	--color-accent-grey: #f0f0f0;
 
-	/* Legacy mapping for compatibility if needed */
-	--color-accent-cyan: #ff2d92;
-	--color-accent-violet: #ec4899;
-	--color-accent-blue: #ff7eb3;
+	--color-accent-cyan: #FFB6C1;
+	--color-accent-violet: #f48fb1;
+	--color-accent-blue: #ffc1cb;
 
-	/* Text Colors - Dark for Light Theme */
 	--color-text-primary: #1a1a1a;
 	--color-text-secondary: #4a4a4a;
 	--color-text-tertiary: #717171;
 	--color-text-muted: #a0a0a0;
 
-	/* Shadows - Pink/Soft Focused */
-	--shadow-glass: 0 8px 32px rgba(255, 45, 146, 0.08);
-	--shadow-glass-lg: 0 16px 48px rgba(255, 45, 146, 0.12);
-	--shadow-glow-pink: 0 0 20px rgba(255, 45, 146, 0.2);
-	--shadow-glow-magenta: 0 0 20px rgba(255, 45, 146, 0.3);
+	--shadow-glass: 0 8px 32px rgba(255, 182, 193, 0.12);
+	--shadow-glass-lg: 0 16px 48px rgba(255, 182, 193, 0.18);
+	--shadow-glow-pink: 0 0 20px rgba(255, 182, 193, 0.35);
+	--shadow-glow-magenta: 0 0 20px rgba(244, 143, 177, 0.35);
 
-	/* Animations */
 	--animate-float: float 6s ease-in-out infinite;
 	--animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
 	--animate-gradient: gradient-shift 8s ease infinite;
+	--animate-heart-burst: heart-burst 0.8s ease-out forwards;
+	--animate-heart-pulse: heart-pulse 0.3s ease-in-out;
 }
 
 @keyframes float {
@@ -77,15 +72,48 @@
 	}
 }
 
-/* Base Styles */
+@keyframes heart-burst {
+	0% {
+		transform: scale(0);
+		opacity: 0;
+	}
+	15% {
+		transform: scale(1.3);
+		opacity: 1;
+	}
+	30% {
+		transform: scale(0.95);
+		opacity: 1;
+	}
+	45% {
+		transform: scale(1.1);
+		opacity: 1;
+	}
+	60% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	100% {
+		transform: scale(1);
+		opacity: 0;
+	}
+}
+
+@keyframes heart-pulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.2);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
 body {
 	font-family: var(--font-inter);
-	background: linear-gradient(
-		135deg,
-		var(--color-bg-primary) 0%,
-		var(--color-bg-secondary) 50%,
-		var(--color-bg-tertiary) 100%
-	);
+	background-color: #ffffff;
 	background-attachment: fixed;
 	min-height: 100vh;
 	color: var(--color-text-primary);
@@ -94,35 +122,33 @@ body {
 }
 
 @layer utilities {
-	/* Glass Effects - Re-imagined for Pink/White */
 	.glass {
-		background: rgba(255, 255, 255, 0.5);
-		backdrop-filter: blur(24px) saturate(180%);
-		-webkit-backdrop-filter: blur(24px) saturate(180%);
-		border: 1px solid rgba(255, 45, 146, 0.1);
+		background: rgba(255, 255, 255, 0.72);
+		backdrop-filter: blur(24px) saturate(160%);
+		-webkit-backdrop-filter: blur(24px) saturate(160%);
+		border: 1px solid rgba(255, 182, 193, 0.2);
 		box-shadow:
-			0 4px 16px rgba(255, 45, 146, 0.05),
-			inset 0 1px 0 rgba(255, 255, 255, 0.8);
-	}
-
-	.glass-strong {
-		background: rgba(255, 255, 255, 0.7);
-		backdrop-filter: blur(40px) saturate(200%);
-		-webkit-backdrop-filter: blur(40px) saturate(200%);
-		border: 1px solid rgba(255, 45, 146, 0.15);
-		box-shadow:
-			0 8px 32px rgba(255, 45, 146, 0.1),
+			0 4px 16px rgba(255, 182, 193, 0.08),
 			inset 0 1px 0 rgba(255, 255, 255, 0.9);
 	}
 
-	.glass-subtle {
-		background: rgba(255, 255, 255, 0.3);
-		backdrop-filter: blur(12px) saturate(150%);
-		-webkit-backdrop-filter: blur(12px) saturate(150%);
-		border: 1px solid rgba(255, 45, 146, 0.05);
+	.glass-strong {
+		background: rgba(255, 255, 255, 0.9);
+		backdrop-filter: blur(40px) saturate(180%);
+		-webkit-backdrop-filter: blur(40px) saturate(180%);
+		border: 1px solid rgba(255, 182, 193, 0.25);
+		box-shadow:
+			0 8px 32px rgba(255, 182, 193, 0.12),
+			inset 0 1px 0 rgba(255, 255, 255, 1);
 	}
 
-	/* Gradient Backgrounds */
+	.glass-subtle {
+		background: rgba(255, 255, 255, 0.45);
+		backdrop-filter: blur(12px) saturate(140%);
+		-webkit-backdrop-filter: blur(12px) saturate(140%);
+		border: 1px solid rgba(255, 182, 193, 0.1);
+	}
+
 	.bg-gradient-radial {
 		background: radial-gradient(
 			ellipse at center,
@@ -132,53 +158,41 @@ body {
 	}
 
 	.bg-gradient-mesh {
-		background:
-			radial-gradient(at 20% 30%, rgba(255, 45, 146, 0.08) 0%, transparent 50%),
-			radial-gradient(at 80% 70%, rgba(255, 45, 146, 0.05) 0%, transparent 50%),
-			radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-			linear-gradient(
-				135deg,
-				var(--color-bg-primary) 0%,
-				var(--color-bg-secondary) 100%
-			);
+		background: #ffffff;
 	}
 
-	/* Accent Gradients */
 	.gradient-accent {
-		background: linear-gradient(135deg, #ff2d92 0%, #ff7eb3 100%);
+		background: linear-gradient(135deg, #FFB6C1 0%, #f48fb1 100%);
 	}
 
 	.gradient-accent-warm {
-		background: linear-gradient(135deg, #ff2d92 0%, #fdbab4 100%);
+		background: linear-gradient(135deg, #FFB6C1 0%, #ffd6dc 100%);
 	}
 
 	.gradient-accent-cool {
-		background: linear-gradient(135deg, #ff7eb3 0%, #ff2d92 100%);
+		background: linear-gradient(135deg, #f48fb1 0%, #FFB6C1 100%);
 	}
 
-	/* Glow Effects */
 	.glow-pink {
 		box-shadow:
-			0 0 20px rgba(255, 45, 146, 0.2),
-			0 0 40px rgba(255, 45, 146, 0.1);
+			0 0 20px rgba(255, 182, 193, 0.3),
+			0 0 40px rgba(255, 182, 193, 0.15);
 	}
 
 	.glow-magenta {
 		box-shadow:
-			0 0 20px rgba(255, 45, 146, 0.3),
-			0 0 40px rgba(255, 45, 146, 0.15);
+			0 0 20px rgba(244, 143, 177, 0.3),
+			0 0 40px rgba(244, 143, 177, 0.15);
 	}
 
-	/* Text Glow */
 	.text-glow {
-		text-shadow: 0 0 8px rgba(255, 45, 146, 0.2);
+		text-shadow: 0 0 8px rgba(255, 182, 193, 0.3);
 	}
 
 	.text-glow-pink {
-		text-shadow: 0 0 15px rgba(255, 45, 146, 0.4);
+		text-shadow: 0 0 15px rgba(255, 182, 193, 0.5);
 	}
 
-	/* Animated Orbs for Background - Pink Themed */
 	.orb {
 		position: absolute;
 		border-radius: 50%;
@@ -187,11 +201,18 @@ body {
 		animation: float 6s ease-in-out infinite;
 	}
 
-	.orb-cyan {
-		/* Renamed or re-themed internally */
+	.orb-pink {
 		background: radial-gradient(
 			circle,
-			rgba(255, 45, 146, 0.2) 0%,
+			rgba(255, 182, 193, 0.35) 0%,
+			transparent 70%
+		);
+	}
+
+	.orb-cyan {
+		background: radial-gradient(
+			circle,
+			rgba(255, 182, 193, 0.25) 0%,
 			transparent 70%
 		);
 	}
@@ -199,7 +220,7 @@ body {
 	.orb-magenta {
 		background: radial-gradient(
 			circle,
-			rgba(255, 75, 160, 0.2) 0%,
+			rgba(244, 143, 177, 0.25) 0%,
 			transparent 70%
 		);
 	}
@@ -207,14 +228,13 @@ body {
 	.orb-violet {
 		background: radial-gradient(
 			circle,
-			rgba(255, 126, 179, 0.15) 0%,
+			rgba(255, 192, 203, 0.2) 0%,
 			transparent 70%
 		);
 	}
 
-	/* Interactive States */
 	.hover-glow:hover {
-		box-shadow: 0 0 20px rgba(255, 45, 146, 0.1);
+		box-shadow: 0 0 20px rgba(255, 182, 193, 0.2);
 	}
 
 	.hover-scale:hover {
@@ -223,17 +243,99 @@ body {
 
 	.hover-lift:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 8px 24px rgba(255, 45, 146, 0.08);
+		box-shadow: 0 8px 24px rgba(255, 182, 193, 0.12);
 	}
 
-	/* Pill Shape */
 	.pill {
 		border-radius: 9999px;
 	}
 
-	/* Focus Ring */
 	.focus-glow:focus {
 		outline: none;
-		box-shadow: 0 0 0 3px rgba(255, 45, 146, 0.2);
+		box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
+	}
+
+	.sidebar-nav-item {
+		display: flex;
+		align-items: center;
+		gap: 0.875rem;
+		padding: 0.75rem 1rem;
+		border-radius: 0.875rem;
+		transition: all 0.2s ease;
+		color: var(--color-text-tertiary);
+		font-weight: 500;
+		font-size: 0.9375rem;
+		cursor: pointer;
+		width: 100%;
+		text-decoration: none;
+	}
+
+	.sidebar-nav-item:hover {
+		background: rgba(255, 182, 193, 0.12);
+		color: var(--color-text-primary);
+	}
+
+	.sidebar-nav-item.active {
+		background: rgba(255, 182, 193, 0.18);
+		color: #c2185b;
+		font-weight: 700;
+	}
+
+	.sidebar-nav-item.active svg {
+		color: #FFB6C1;
+	}
+
+	.sidebar-icon-only {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.75rem;
+		height: 2.75rem;
+		border-radius: 0.875rem;
+		transition: all 0.2s ease;
+		color: var(--color-text-tertiary);
+		cursor: pointer;
+	}
+
+	.sidebar-icon-only:hover {
+		background: rgba(255, 182, 193, 0.12);
+		color: var(--color-text-primary);
+	}
+
+	.sidebar-icon-only.active {
+		color: #FFB6C1;
+	}
+
+	.heart-burst {
+		animation: heart-burst 0.8s ease-out forwards;
+	}
+
+	.heart-btn-pulse {
+		animation: heart-pulse 0.3s ease-in-out;
+	}
+
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+
+	.reels-snap-container {
+		overflow-y: scroll;
+		scroll-snap-type: y mandatory;
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.reels-snap-container::-webkit-scrollbar {
+		display: none;
+	}
+
+	.reels-snap-item {
+		scroll-snap-align: start;
+		scroll-snap-stop: always;
 	}
 }

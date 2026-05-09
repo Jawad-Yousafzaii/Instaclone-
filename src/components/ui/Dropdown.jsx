@@ -50,7 +50,7 @@ Dropdown.Item = function DropdownItem({children, onClick, className = ""}) {
 		<button
 			onClick={onClick}
 			className={cn(
-				"text-text-secondary hover:bg-accent-grey hover:text-text-primary flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold transition-all duration-200",
+				"flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold text-gray-600 transition-all duration-200 hover:bg-[#FFB6C1]/10 hover:text-gray-900",
 				className,
 			)}
 		>
@@ -60,5 +60,5 @@ Dropdown.Item = function DropdownItem({children, onClick, className = ""}) {
 };
 
 Dropdown.Divider = function DropdownDivider() {
-	return <div className="border-accent-grey my-2 border-t" />;
+	return <div className="my-2 border-t border-[#FFB6C1]/15" />;
 };

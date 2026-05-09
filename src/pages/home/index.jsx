@@ -85,7 +85,7 @@ export default function Home() {
 
 	return (
 		<div className="bg-gradient-mesh relative min-h-screen overflow-hidden">
-			{/* Animated Orbs */}
+
 			<div
 				className="orb orb-cyan -top-32 -left-32 h-[500px] w-[500px]"
 				style={{animationDelay: "0s"}}
@@ -99,7 +99,7 @@ export default function Home() {
 				style={{animationDelay: "4s"}}
 			/>
 
-			{/* Header */}
+
 			<header className="relative z-10 px-6 py-6">
 				<div className="mx-auto flex max-w-7xl items-center justify-between">
 					<div className="flex items-center gap-3">
@@ -118,7 +118,7 @@ export default function Home() {
 								/>
 							</svg>
 						</div>
-						<span className="text-xl font-bold text-white">VELORA</span>
+						<span className="text-xl font-bold text-white">LuminaCloud</span>
 					</div>
 					<a
 						href="#login"
@@ -129,11 +129,11 @@ export default function Home() {
 				</div>
 			</header>
 
-			{/* Hero Section */}
+
 			<section className="relative z-10 px-6 py-16 md:py-24">
 				<div className="mx-auto max-w-7xl">
 					<div className="grid items-center gap-12 lg:grid-cols-2">
-						{/* Left - Content */}
+
 						<div className="text-center lg:text-left">
 							<h1 className="mb-6 text-5xl leading-tight font-bold text-white md:text-6xl lg:text-7xl">
 								Share Your
@@ -147,7 +147,7 @@ export default function Home() {
 								discover amazing media content.
 							</p>
 
-							{/* Features */}
+
 							<div className="mb-8 grid gap-4 sm:grid-cols-3">
 								{features.map((feature, index) => (
 									<div
@@ -201,7 +201,7 @@ export default function Home() {
 							</div>
 						</div>
 
-						{/* Right - Login Form */}
+
 						<div
 							id="login"
 							className="glass-strong mx-auto max-w-md rounded-3xl p-8 lg:mx-0 lg:ml-auto"
@@ -213,7 +213,7 @@ export default function Home() {
 								<p className="text-sm text-white/60">Sign in to continue</p>
 							</div>
 
-							{/* Role Toggle */}
+
 							<div className="mb-6 flex rounded-xl bg-white/5 p-1">
 								<button
 									type="button"
@@ -302,11 +302,11 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* Footer */}
+
 			<footer className="relative z-10 border-t border-white/5 px-6 py-8">
 				<div className="mx-auto max-w-7xl text-center">
 					<p className="text-sm text-white/40">
-						© 2026 VELORA. All rights reserved.
+						© 2026 LUMINACLOUD. All rights reserved.
 					</p>
 				</div>
 			</footer>

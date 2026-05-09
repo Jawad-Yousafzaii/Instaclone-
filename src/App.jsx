@@ -12,10 +12,10 @@ import {useAuthStore} from "./store/useAuthStore";
 
 function LoadingFallback() {
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+		<div className="flex min-h-screen items-center justify-center bg-white">
 			<div className="flex flex-col items-center gap-4">
-				<div className="h-12 w-12 animate-spin rounded-full border-4 border-white/30 border-t-white" />
-				<p className="text-lg text-white">Loading...</p>
+				<div className="h-12 w-12 animate-spin rounded-full border-4 border-[#FFB6C1]/30 border-t-[#FFB6C1]" />
+				<p className="text-base font-medium text-gray-400">Loading...</p>
 			</div>
 		</div>
 	);
@@ -77,7 +77,8 @@ export default function App() {
 					);
 				})}
 
-				<Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
+				<Route path="/404" element={<NotFound />} />
+				<Route path="*" element={<Navigate to="/404" replace />} />
 			</Routes>
 		</Suspense>
 	);

@@ -18,7 +18,7 @@ export default function Card({
 				"rounded-3xl transition-all duration-300",
 				variants[variant],
 				hover &&
-					"hover:-translate-y-1 hover:bg-white/12 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]",
+					"hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(255,182,193,0.18)]",
 				className,
 			)}
 		>

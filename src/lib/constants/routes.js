@@ -26,8 +26,33 @@ export const routes = [
 		layout: "creator",
 	},
 	{
+		path: ROUTES.CREATOR.UPLOAD,
+		element: React.createElement(
+			lazy(() => import("@/pages/creator/MediaUpload")),
+		),
+		isPrivate: true,
+		allowedRoles: [USER_ROLES.CREATOR],
+		layout: "creator",
+	},
+	{
+		path: ROUTES.CREATOR.MANAGE,
+		element: React.createElement(
+			lazy(() => import("@/pages/creator/Dashboard")),
+		),
+		isPrivate: true,
+		allowedRoles: [USER_ROLES.CREATOR],
+		layout: "creator",
+	},
+	{
 		path: ROUTES.CONSUMER.FEED,
 		element: React.createElement(lazy(() => import("@/pages/consumer/Feed"))),
+		isPrivate: true,
+		allowedRoles: [USER_ROLES.CONSUMER],
+		layout: "consumer",
+	},
+	{
+		path: ROUTES.CONSUMER.REELS,
+		element: React.createElement(lazy(() => import("@/pages/consumer/Reels"))),
 		isPrivate: true,
 		allowedRoles: [USER_ROLES.CONSUMER],
 		layout: "consumer",
@@ -39,6 +64,6 @@ export const routes = [
 		),
 		isPrivate: true,
 		allowedRoles: [USER_ROLES.CONSUMER, USER_ROLES.CREATOR],
-		// No layout - MediaDetail will render standalone to allow both creators and consumers
+		layout: "consumer",
 	},
 ];
